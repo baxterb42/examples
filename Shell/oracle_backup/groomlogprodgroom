@@ -1,0 +1,4 @@
+#!/bin/bash
+# clean out clean out of Oracle admin logs for PROD
+
+find /backups/prod/logs_admin -type f -mtime +45 |xargs --no-run-if-empty --max-lines=100 rm

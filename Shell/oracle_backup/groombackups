@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# clean out backups older than "-mtime +nnn" days
+
+BASEDIR=/backups
+for i in base prod/fulldump prod/arch ; do
+  find $BASEDIR/$i -type f -mtime +119 |xargs --no-run-if-empty --max-lines=100 rm
+done
+

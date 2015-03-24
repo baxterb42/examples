@@ -1,0 +1,44 @@
+#!/bin/bash
+# 050302, blb: find & move older files out of admin log dir, tar & compress
+
+# setup
+INST=prod
+TODAY=`date +%y%m%d`
+ALOGDIR=/prodapp/PROD/prodcomn/admin/log/PROD_oracle
+DESTROOT=/backups/$INST/logs_admin
+OUTDIR=$DESTROOT/$TODAY
+
+if [ ! -d $OUTDIR ]; then
+  mkdir $OUTDIR
+fi
+
+# move anything older than 7 days into our (new) holding directory
+echo -n "Grooming..."
+if ! find $ALOGDIR  -mtime +7 |xargs --max-lines=1 -i mv {} $OUTDIR
+then
+  echo "Find or move failure."
+  exit 1
+fi
+
+# make paths simple for tar
+cd $DESTROOT
+
+# bundle 'em up, verify, and if OK: compress and delete the directory
+echo -n "Archiving..."
+if /bin/tar -c --verify -f ./adminlog_$INST_$TODAY.tar $TODAY/
+then
+  echo -n "Compressing..."
+  if /usr/bin/bzip2 $DESTROOT/adminlog_$INST_$TODAY.tar
+  then
+   echo -n "Cleaning up..."
+   rm -R $OUTDIR
+   echo "finished."
+  else
+    "Directory removal error."
+    exit 1
+  fi
+else
+  echo "BZip2 error."
+  exit 1
+fi
+

@@ -1,0 +1,23 @@
+# syntax: minute hour day month weekday [username] command
+###
+### tasks that run every day
+###
+# keep audit log directory size down
+0 1 * * * /usr/local/bin/dircleantosizebyage.pl /var/log/audit.d 1000 200
+# dump file compresion a/r, start at 2:00
+0 2 * * * /usr/local/bin/compressbackups
+# compress any .arc sets
+15 5 * * * /usr/local/bin/archcomprprod >>/dev/null
+# groom PROD admin log directory
+15 6 * * * /usr/local/bin/groomlogprod >>/dev/null
+# run logwatch everyday at 11:00 pm
+0 23 * * 1-7 /etc/log.d/scripts/logwatch.pl
+###
+### tasks that run only on specific days
+###
+# maintain backup area disk space for new jobs, compression, etc.
+# 4:00 AM on Fridays
+0 4 * * 5 /usr/local/bin/groombackups
+# run 'macro' cold backup of PROD instance, 1:00 AM Saturday
+0 1 * * 6 /root/bin/dobackprod
+# 0 1 * * 7 /root/bin/dobackprod
